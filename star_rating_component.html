@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .star-rating-container {
+            display: flex;
+            gap: 3px;
+            font-size: 28px;
+            cursor: pointer;
+            user-select: none;
+            padding: 5px 0;
+        }
+        .star {
+            color: #ddd;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .star:hover,
+        .star:hover ~ .star {
+            color: #ffc107 !important;
+            transform: scale(1.1);
+        }
+        .star.active {
+            color: #ffc107;
+        }
+        .star-rating-container:hover .star.active {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="star-rating-container" id="stars-{KEY}">
+        <span class="star" data-rating="1">⭐</span>
+        <span class="star" data-rating="2">⭐</span>
+        <span class="star" data-rating="3">⭐</span>
+        <span class="star" data-rating="4">⭐</span>
+        <span class="star" data-rating="5">⭐</span>
+    </div>
+    <script>
+        (function() {{
+            const container = document.getElementById('stars-{KEY}');
+            const stars = container.querySelectorAll('.star');
+            let currentRating = {DEFAULT};
+            
+            // 初始化显示
+            function updateDisplay(rating) {{
+                stars.forEach((star, index) => {{
+                    if (index < rating) {{
+                        star.classList.add('active');
+                    }} else {{
+                        star.classList.remove('active');
+                    }}
+                }});
+            }}
+            
+            updateDisplay(currentRating);
+            
+            // 点击选择
+            stars.forEach((star, index) => {{
+                star.addEventListener('click', function() {{
+                    const rating = index + 1;
+                    currentRating = rating;
+                    updateDisplay(rating);
+                    
+                    // 发送值到Streamlit
+                    if (window.parent) {{
+                        window.parent.postMessage({{
+                            type: 'streamlit:setComponentValue',
+                            value: rating
+                        }}, '*');
+                    }}
+                }});
+            }});
+            
+            // 悬停效果
+            stars.forEach((star, index) => {{
+                star.addEventListener('mouseenter', function() {{
+                    const hoverRating = index + 1;
+                    stars.forEach((s, i) => {{
+                        if (i < hoverRating) {{
+                            s.style.color = '#ffc107';
+                        }} else {{
+                            s.style.color = '#ddd';
+                        }}
+                    }});
+                }});
+            }});
+            
+            container.addEventListener('mouseleave', function() {{
+                updateDisplay(currentRating);
+            }});
+        }})();
+    </script>
+</body>
+</html>
+
